@@ -38,3 +38,12 @@
     outline: none;
     padding: 10px;
 }
+
+label {
+    /* lo agregué para quedara como a Fernando */
+    width: 100%; 
+}
+
+.react-datepicker-wrapper {
+    width: 100%;
+}
