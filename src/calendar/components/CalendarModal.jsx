@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { addHours, differenceInSeconds, isDate } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { addHours, differenceInSeconds } from "date-fns";
 
 import Swal from "sweetalert2";
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -9,7 +9,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import es from 'date-fns/locale/es';
 
 import "react-datepicker/dist/react-datepicker.css";
-import { useUiStore } from "../../hooks";
+import { useCalendarStore, useUiStore } from "../../hooks";
 
 import "./CalendarModal.css";
 
@@ -17,12 +17,7 @@ registerLocale('es', es);
 
 const customStyles = {
     content: {
-        top: '50%',
-        left: '50%',
-        right: 'auto',
-        bottom: 'auto%',
-        marginRight: '-50%',
-        transform: 'translate(-50%, -50%)',
+        top: '50%', left: '50%', right: 'auto', bottom: 'auto%', marginRight: '-50%', transform: 'translate(-50%, -50%)',
     }
 }
 
@@ -31,19 +26,27 @@ Modal.setAppElement('#root');
 
 export const CalendarModal = () => {
 
-    const { closeDateModal } = useUiStore();
-    const { isDateModalOpen } = useUiStore();
+    const { activeEvent, startSavingEvent } = useCalendarStore();
+
+    const { isDateModalOpen, closeDateModal } = useUiStore();
+    
     const [formSubmitted, setFormSubmitted] = useState( false );
 
     const [formValues, setformValues] = useState({
-        title: 'Titulo',
-        notes: 'Notas',
+        title: '',
+        notes: '',
         start: new Date(),
-        end: addHours( new Date(), 2 ),
+        end: addHours( new Date(), 2),
     });
 
-    const { title, notes, start, end } = formValues;
-
+    let title, notes, start, end;
+    if( formValues !== null ) {
+        title = formValues.title;
+        notes = formValues.notes;
+        start = formValues.start;
+        end = formValues.end;
+    } 
+ 
     const titleClass = useMemo( () => {
 
         if( !formSubmitted ) return '';
@@ -52,6 +55,12 @@ export const CalendarModal = () => {
 
     }, [ title, formSubmitted ]);
 
+    useEffect(() => {
+        if( activeEvent !== null ) {
+            setformValues({ ...activeEvent });
+        }
+    }, [activeEvent])
+    
 
     const onInputChanged = ( value ) => {
         setformValues({
@@ -68,7 +77,7 @@ export const CalendarModal = () => {
         });
     }
 
-    const onSubmit = ( event ) => {
+    const onSubmit = async ( event ) => {
         event.preventDefault();
         setFormSubmitted( true );
         
@@ -79,15 +88,19 @@ export const CalendarModal = () => {
 
         const difference = differenceInSeconds( end, start );
         if( isNaN( difference ) || difference < 0 ) {
-            Swal.fire("Error en fechas","Revisar las fechas ingresadas","error");
+            Swal.fire("Error en fechas","Revisar las fechas/horas ingresadas","error");
             return;
-        } 
+        }
 
         if( title.length <= 0 ) return; 
         
+        await startSavingEvent( formValues );
+
+        onClose();
     }
 
     const onClose = () => {
+        setFormSubmitted(false);
         closeDateModal();
     }
 
@@ -100,14 +113,24 @@ export const CalendarModal = () => {
             overlayClassName="modal-fondo"
             closeTimeoutMS={ 200 }
         >
-            <h1> Nuevo evento </h1>
+            <div className="container">
+                <div className="row align-items-start">
+                    <div className="col-11">
+                        <h1> { ( !formValues.hasOwnProperty("_id") ) ? "Nuevo evento" : "Modificar evento" } </h1>
+                    </div>
+                    <div className="col-1 float-end">
+                        <button className="btnClose" onClick={ onClose }><i className="fa-solid fa-square-xmark"></i> </button>   
+                    </div>
+                </div>
+            </div>
+            
             <hr />
             <form onSubmit={ onSubmit } className="container">
 
                 <div className="form-group mb-2">
                     <label>Fecha y hora inicio</label>
                     <DatePicker 
-                        selected={ start }
+                        selected={ start || '' }
                         onChange={ (event) => onDatePickerChanged(event, 'start') }
                         className="form-control"
                         dateFormat="Pp"
@@ -120,8 +143,8 @@ export const CalendarModal = () => {
                 <div className="form-group mb-2">
                     <label>Fecha y hora fin</label>
                     <DatePicker 
-                        minDate={ formValues.start }
-                        selected={ end }
+                        minDate={ start }
+                        selected={ end || ''}
                         onChange={ (event) => onDatePickerChanged(event, 'end') }
                         className="form-control"
                         dateFormat="Pp"
@@ -133,14 +156,14 @@ export const CalendarModal = () => {
 
                 <hr />
                 <div className="form-group mb-2">
-                    <label>Titulo y notas</label>
+                    <label>Título y notas</label>
                     <input 
                         type="text" 
                         className={ "form-control " + titleClass }
                         placeholder="Título del evento"
                         name="title"
                         autoComplete="off"
-                        value={ title }
+                        value={ title || '' }
                         onChange={ onInputChanged }
                     />
                     <small id="emailHelp" className="form-text text-muted">Una descripción corta</small>
@@ -153,7 +176,7 @@ export const CalendarModal = () => {
                         placeholder="Notas"
                         rows="5"
                         name="notes"
-                        value={ notes }
+                        value={ notes || '' }
                         onChange={ onInputChanged }
                     ></textarea>
                     <small id="emailHelp" className="form-text text-muted">Información adicional</small>

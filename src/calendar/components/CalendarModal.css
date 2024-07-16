@@ -47,3 +47,8 @@ label {
 .react-datepicker-wrapper {
     width: 100%;
 }
+
+.btnClose {
+    background-color: transparent;
+    border: 0px;
+}
