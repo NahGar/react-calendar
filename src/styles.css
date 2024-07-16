@@ -19,3 +19,7 @@ code {
     height: 70px;
     width: 70px;
 }
+
+.floatRight {
+    float: right;
+}

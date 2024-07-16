@@ -182,13 +182,15 @@ export const CalendarModal = () => {
                     <small id="emailHelp" className="form-text text-muted">Información adicional</small>
                 </div>
 
-                <button
-                    type="submit"
-                    className="btn btn-outline-primary btn-block"
-                >
-                    <i className="far fa-save"></i>
-                    <span> Guardar</span>
-                </button>
+                <div className="form-group mb-2">
+                    <button
+                        type="submit"
+                        className="btn btn-outline-primary btn-block floatRight"
+                    >
+                        <i className="far fa-save"></i>
+                        <span> Guardar</span>
+                    </button>
+                </div>
 
             </form>
 
