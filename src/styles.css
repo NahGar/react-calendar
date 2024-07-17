@@ -20,6 +20,10 @@ code {
     width: 70px;
 }
 
+.fab-delete {
+    right: 150px;
+}
+
 .floatRight {
     float: right;
 }

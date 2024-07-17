@@ -27,19 +27,19 @@ export const useCalendarStore = () => {
         }
     }
 
-    const startDeletingEvent = async ( id ) => {
-
-        dispatch( onDeleteEvent( id ) );
-        
+    const startDeletingEvent = async () => {
+        dispatch( onDeleteEvent() );
     }
 
     return {
         //Propiedades
         events,
         activeEvent,
+        hasEventSelected: !!activeEvent,
 
         //Metodos
         setActiveEvent,
         startSavingEvent,
+        startDeletingEvent,
     }
 }
