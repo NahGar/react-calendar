@@ -1,10 +1,11 @@
 
 import { configureStore } from "@reduxjs/toolkit";
-import { calendarSlice, uiSlice } from "./";
+import { authSlice, calendarSlice, uiSlice } from "./";
 
 //el store hay que colocarlo en una parte "alta" de la aplicación (CalendarApp)
 export const store = configureStore({
     reducer: {
+        auth: authSlice.reducer,
         calendar: calendarSlice.reducer,
         ui: uiSlice.reducer,
     },
