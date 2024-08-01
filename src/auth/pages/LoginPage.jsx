@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import Swal from 'sweetalert2';
+
 import { useForm, useAuthStore } from '../../hooks';
 
 import './LoginPage.css';
@@ -16,7 +19,7 @@ const registerFormFields = {
 
 export const LoginPage = () => {
 
-    const { startLogin } = useAuthStore();
+    const { errorMessage, startLogin, startRegister } = useAuthStore();
 
     const { loginEmail, 
         loginPassword, 
@@ -27,15 +30,50 @@ export const LoginPage = () => {
         registerPassword2, 
         onInputChange:onRegisterInputChange} = useForm(registerFormFields);
 
+    
+    useEffect(() => {
+        if( errorMessage !== undefined ) {
+            Swal.fire("Error en login",errorMessage,"error");
+        }
+    }, [errorMessage])
+    
+
     const loginSubmit = ( event ) => {
         event.preventDefault();
+
+        if( !loginEmail ) {
+            Swal.fire("Error en login","Falta indicar correo","error");
+            return;
+        }
+        if( !loginPassword ) {
+            Swal.fire("Error en login","Falta indicar contraseña","error");
+            return;
+        }
 
         startLogin({ email:loginEmail, password:loginPassword });
     }
 
     const registerSubmit = ( event ) => {
         event.preventDefault();
-        console.log(registerName,registerEmail,registerPassword,registerPassword2)
+        
+        if( !registerName ) {
+            Swal.fire("Error en login","Falta indicar nombre","error");
+            return;
+        }
+        if( !registerEmail ) {
+            Swal.fire("Error en login","Falta indicar correo","error");
+            return;
+        }
+        if( !registerPassword ) {
+            Swal.fire("Error en login","Falta indicar contraseña","error");
+            return;
+        }
+        if( registerPassword !== registerPassword2 ) {
+            Swal.fire("Error en registro","No coinciden las contraseñas","error");
+            return;
+        }
+
+        startRegister({ name:registerName, email:registerEmail, password:registerPassword });
     }
 
     return (
@@ -46,7 +84,7 @@ export const LoginPage = () => {
                     <form onSubmit={ loginSubmit }>
                         <div className="form-group mb-2">
                             <input 
-                                type="text"
+                                type="email"
                                 className="form-control"
                                 placeholder="Correo"
                                 name="loginEmail"
