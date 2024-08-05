@@ -9,7 +9,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import es from 'date-fns/locale/es';
 
 import "react-datepicker/dist/react-datepicker.css";
-import { useCalendarStore, useUiStore } from "../../hooks";
+import { useAuthStore, useCalendarStore, useUiStore } from "../../hooks";
 
 import "./CalendarModal.css";
 
@@ -26,11 +26,15 @@ Modal.setAppElement('#root');
 
 export const CalendarModal = () => {
 
+    const { user } = useAuthStore();
+
     const { activeEvent, startSavingEvent } = useCalendarStore();
 
     const { isDateModalOpen, closeDateModal } = useUiStore();
     
     const [formSubmitted, setFormSubmitted] = useState( false );
+
+    const [contolsDisabled, setContolsDisabled] = useState( false );
 
     const [formValues, setformValues] = useState({
         title: '',
@@ -48,18 +52,22 @@ export const CalendarModal = () => {
     } 
  
     const titleClass = useMemo( () => {
-
+        
         if( !formSubmitted ) return '';
-
+        
         return ( title.length <= 0 ? 'is-invalid' : '')
-
+        
     }, [ title, formSubmitted ]);
-
+    
     useEffect(() => {
         if( activeEvent !== null ) {
             setformValues({ ...activeEvent });
+
+            setContolsDisabled( ( activeEvent.id === undefined || activeEvent.user._id === user.uid ) ? false : true );
         }
-    }, [activeEvent])
+    }, [activeEvent]);
+
+    console.log({contolsDisabled});
     
 
     const onInputChanged = ( value ) => {
@@ -137,6 +145,7 @@ export const CalendarModal = () => {
                         showTimeSelect
                         locale="es"
                         timeCaption="Hora"
+                        disabled={ contolsDisabled }
                     />
                 </div>
 
@@ -151,6 +160,7 @@ export const CalendarModal = () => {
                         showTimeSelect
                         locale="es"
                         timeCaption="Hora"
+                        disabled={ contolsDisabled }
                     />
                 </div>
 
@@ -165,6 +175,7 @@ export const CalendarModal = () => {
                         autoComplete="off"
                         value={ title || '' }
                         onChange={ onInputChanged }
+                        disabled={ contolsDisabled }
                     />
                     <small id="emailHelp" className="form-text text-muted">Una descripción corta</small>
                 </div>
@@ -178,6 +189,7 @@ export const CalendarModal = () => {
                         name="notes"
                         value={ notes || '' }
                         onChange={ onInputChanged }
+                        disabled={ contolsDisabled }
                     ></textarea>
                     <small id="emailHelp" className="form-text text-muted">Información adicional</small>
                 </div>
@@ -186,6 +198,7 @@ export const CalendarModal = () => {
                     <button
                         type="submit"
                         className="btn btn-outline-primary btn-block floatRight"
+                        disabled={ contolsDisabled }
                     >
                         <i className="far fa-save"></i>
                         <span> Guardar</span>

@@ -3,16 +3,18 @@ import { Calendar } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEvent, CalendarModal, FabAddNew, FabDelete, Navbar } from "../";
 import { localizer, getMessagesES } from '../../helpers';
-import { useCalendarStore, useUiStore } from '../../hooks';
+import { useAuthStore, useCalendarStore, useUiStore } from '../../hooks';
 
 export const CalendarPage = () => {
 
+    const { user } = useAuthStore();
     const { openDateModal } = useUiStore();
     const { events, setActiveEvent, startLoadingEvents } = useCalendarStore();    
     const [lastView, setLastView] = useState(localStorage.getItem('calendarLastView') || 'week');
     
     const eventStyleGetter = ( event, start, end, isSelected ) => {
-        if ( isSelected ){
+
+        if ( isSelected ) {
             return {
                 style: {
                     backgroundColor: 'yellow', borderRadius: '0px', opacity: 0.8, color: 'black'
@@ -20,9 +22,19 @@ export const CalendarPage = () => {
             }    
         }
         else {
-            return {
-                style: {
-                    backgroundColor: 'navy', borderRadius: '0px', opacity: 0.8, color: 'white'
+            
+            if( user.uid === event.user._id ) {
+                return {
+                    style: {
+                        backgroundColor: 'navy', borderRadius: '0px', opacity: 0.8, color: 'white'
+                    }
+                }
+            }
+            else {
+                return {
+                    style: {
+                        backgroundColor: 'navy', borderRadius: '0px', opacity: 0.3, color: 'white'
+                    }
                 }
             }
         }

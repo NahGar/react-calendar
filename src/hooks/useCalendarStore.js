@@ -1,6 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import { onAddNewEvent, onDeleteEvent, onSetActiveEvent, onUpdateEvent } from "../store";
+import Swal from "sweetalert2";
+
+import { onAddNewEvent, onDeleteEvent, onSetActiveEvent, onUpdateEvent, onLoadEvents } from "../store";
 import { calendarApi } from "../api";
+import { convertEventStrToEventDate } from "../helpers";
 
 export const useCalendarStore = () => {
 
@@ -16,33 +19,64 @@ export const useCalendarStore = () => {
 
     const startSavingEvent = async ( event ) => {
 
-        if( event._id ) { //update
-            dispatch( onUpdateEvent( { ...event } ) );
-        }
-        else { //insert
+        try {
             
-            const { data } = await calendarApi.post('/events', event );
-            
-            //event._id = new Date().getTime();
-            event.id = data.event.id;
-            event.bgColor = '#fafafa';
-            event.user = user;
+            if( event.id ) { //update
+    
+                await calendarApi.put('/events/' + event.id, event);
+    
+                dispatch( onUpdateEvent( { ...event, user } ) );
 
-            dispatch( onAddNewEvent( event ) );
+                Swal.fire('',"Modificación exitosa",'success');
+            }
+            else { //insert
+                
+                const { data } = await calendarApi.post('/events', event );
+                
+                //event.id = new Date().getTime();
+                event.id = data.event.id;
+                event.bgColor = '#fafafa';
+                event.user = user;
+    
+                dispatch( onAddNewEvent( event ) );
+
+                Swal.fire('',"Creación exitosa",'success');
+            }
+
+        } catch (error) {
+            console.log(error);
+            Swal.fire('Error al guardar',error.response.data.msg,'error');
         }
+        
     }
 
     const startDeletingEvent = async () => {
-        dispatch( onDeleteEvent() );
+
+        try {
+            await calendarApi.delete('/events/' + activeEvent.id );
+
+            dispatch( onDeleteEvent() );
+
+            Swal.fire('',"Eliminación exitosa",'success');
+
+        } catch (error) {
+            console.log(error);
+            Swal.fire('Error al eliminar',error.response.data.msg,'error');
+        }
     }
 
     const startLoadingEvents = async () => {
 
         try {
-            const { data } = await calendarApi.get('/events', event );
-            console.log(data);
+            const { data } = await calendarApi.get('/events');
+
+            const events = convertEventStrToEventDate( data.events );
+            
+            dispatch ( onLoadEvents( events ) );
+
         } catch (error) {
             console.log(error);
+            Swal.fire('Error al cargar los eventos',error.response.data.msg,'error');
         }
     }
 
