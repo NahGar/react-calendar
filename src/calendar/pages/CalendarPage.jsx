@@ -14,6 +14,10 @@ export const CalendarPage = () => {
     
     const eventStyleGetter = ( event, start, end, isSelected ) => {
 
+        //el backend devuelve uid
+        //const isMyEvent = ( user.uid === event.user._id ) || ( user.uid === event.user.uid );
+        const isMyEvent = ( user.uid === event.user.uid );
+
         if ( isSelected ) {
             return {
                 style: {
@@ -22,19 +26,9 @@ export const CalendarPage = () => {
             }    
         }
         else {
-            
-            if( user.uid === event.user._id ) {
-                return {
-                    style: {
-                        backgroundColor: 'navy', borderRadius: '0px', opacity: 0.8, color: 'white'
-                    }
-                }
-            }
-            else {
-                return {
-                    style: {
-                        backgroundColor: 'navy', borderRadius: '0px', opacity: 0.3, color: 'white'
-                    }
+            return {
+                style: {
+                    backgroundColor: 'navy', borderRadius: '0px', opacity: isMyEvent ? 0.8 : 0.3, color: 'white'
                 }
             }
         }

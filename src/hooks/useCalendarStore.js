@@ -72,7 +72,18 @@ export const useCalendarStore = () => {
 
             const events = convertEventStrToEventDate( data.events );
             
-            dispatch ( onLoadEvents( events ) );
+            // corrige diferencia de event.user._id en carga y event.user.uid en creación
+            const eventsUpdated = events.map( (event) => {
+                return {
+                    ...event,
+                    user: {
+                        uid: event.user._id,
+                        name: event.user.name,
+                    }
+                };
+            });
+            
+            dispatch ( onLoadEvents( eventsUpdated ) );
 
         } catch (error) {
             console.log(error);
